@@ -1,0 +1,22 @@
+{
+    "change_name": "if victim_ip.startswith('29.11') then name ='Rams Bottom'",
+    "change_sev": "if 'critical' in impact.lower() then severity = 'P1'",
+    "title": "Dr",
+    "name": "NO NAME",
+    "datetime": "23rd of March, 2024 at 03:36 PM",
+    "alert_name": "All Your Base Are Belong To Us!",
+    "from": "BoxSOC@bigbox.com.io",
+    "to": "rbottom@secretlydeadlyorganization.com.io",
+    "cc": "bob-boyle@creamcuts.com, mkrabs@rustyrabbits.co",
+    "subject_line": "BOX-XZ-09225 | Critical Severity | P1 | All Your Base Are Belong To Us",
+    "victim": "AWESOME/admin",
+    "victim_ip": "29.11.v.b",
+    "attacker_dom": "notransomware@AYBABTU.goodguys",
+    "impact": "Critical",
+    "severity": "NULL",
+    "victim_host": "AWESOME.DC.secretlydeadlyorganization.com.io",
+    "link": "https://siem-somethingawesome?query=allyourbasearebelongtous%20ransomware",
+    "item": "a new deadly varient of ransomware",
+    "malware_name": "AYBABTU.Win32",
+    "apt_name": "Deadly Donut APT"
+}

@@ -1,0 +1,25 @@
+From:     [{from}]
+To:       [{to}]
+CC:       [{cc}]
+Subject:  [{subject_line}]
+
+
+Hi {title} {name},
+
+On {datetime}, the security operations center received an alert titled "{alert_name}".
+
+Our inital investigation shows that the user {victim} with the IP address {victim_ip} connected to the domain {attacker_dom}
+and downloaded {item} by a group of hackers known as "{apt_name}".
+
+Further analysis shows that the user {victim} downloaded and executed the file {malware_name}
+
+the user was logged into the host {victim_host} bla bla bla..............
+
+
+impact:    {impact}
+severity:  {severity}
+username:  {victim}
+hostname:  {victim_host}
+detection: {link}
+summary:   {alert_name}
+setected:  {datetime}
