@@ -2,6 +2,7 @@ import argparse, json, re
 
 GET_IF_RESULT = r"\S+\s*=\s*'[\S ]+'|\S+\s*=\s*\"[\S ]+\""
 GET_STRING = r"'[\S ]+'|\"[\S ]+\""
+GET_VARS = r"{\S+}"
 
 # Returns the value that is stored in the json key.
 def check_json_error(data, key: str) -> str | None:
@@ -53,6 +54,40 @@ def issue_results(data, expr: str):
   expr_value = expr_value.replace('"', "").replace("'", "")
 
   set_value(data, check_key, expr_value)
+
+
+# Finds all variables/keys in the template file and creates a config file from it. 
+def search_template_variables(args, display_data=False):
+
+  # Reads the template file into a string and parses it for the variables.
+  templ_buffer = read_file(args.parse_template)
+  find_vars = re.findall(GET_VARS, templ_buffer)
+  json_keys = []
+
+  # Removes the curly braces from each variable and places items ina new list.
+  for var in find_vars:
+    key = var.replace("{", "").replace("}", "")
+    json_keys.append(key)
+
+  # Removes duplicates from the list.
+  filter_vars = list(set(json_keys))
+  json_dictonary = []
+
+  # Gives each key a value.
+  for key in filter_vars:
+    json_dictonary.append([key, ""])
+
+  # Creates the json structure.
+  json_data = json.dumps(dict(json_dictonary), indent=4)
+  
+  # Displays data to the screen.
+  if display_data == True:
+    print(json_data)
+  else:
+    # Writes data to a file.
+    with open(args.output, "w") as f:
+      f.write(json_data)
+      print(f"Successfully wrote {len(json_data)} bytes to {args.output}")
 
 
 # Parses the keys and key values and replaces the content as specified by the user.
@@ -150,11 +185,16 @@ def main():
   parser = argparse.ArgumentParser(description="none")
   parser.add_argument("-c", "--config_file", action="store", help="The file path that holds the keys and key values")
   parser.add_argument("-t", "--template", action="store", help="The file path to the template to modify")
+  parser.add_argument("-p", "--parse_template", action="store")
   parser.add_argument("-o", "--output", action="store", help="The file path to the file you want to create")
   args = parser.parse_args()
 
   if args.config_file != None and args.template != None:
     parse_input(args)
+  elif args.parse_template != None and args.output != None:
+    search_template_variables(args)
+  elif args.parse_template != None and args.output == None:
+    search_template_variables(args, display_data=True)
   else:
     print("Error: No config file or template file was specified.")
 
