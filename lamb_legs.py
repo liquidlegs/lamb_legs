@@ -41,6 +41,18 @@ def set_value(data: str, key: str, value: str) -> bool:
   except Exception as e:
     print(f"Error: {e}")
     return False
+  
+
+def issue_results(data, expr: str):
+  # Seperates the name of the key and the value to assign to the key
+  check_key = check_if_expr(GET_IF_RESULT, expr)
+  expr_value = check_if_expr(GET_STRING, expr)
+
+  # Modifies the json to assign the value to the key as sepcified in the if statement.
+  check_key = check_key.replace(expr_value, "").replace(" ", "").replace("=", "")
+  expr_value = expr_value.replace('"', "").replace("'", "")
+
+  set_value(data, check_key, expr_value)
 
 
 # Parses the keys and key values and replaces the content as specified by the user.
@@ -103,15 +115,21 @@ def parse_input(args):
       code_string = eval(statement)
 
       if code_string == True:
-        # Seperates the name of the key and the value to assign to the key
-        check_key = check_if_expr(GET_IF_RESULT, expr)
-        expr_value = check_if_expr(GET_STRING, expr)
+        check_chunks = expr.split(";") or expr.split("; ")
+        
+        if len(check_chunks) > 1:
+          for chunk in check_chunks:
+            issue_results(data, chunk)
+        else:
+          # Seperates the name of the key and the value to assign to the key
+          check_key = check_if_expr(GET_IF_RESULT, expr)
+          expr_value = check_if_expr(GET_STRING, expr)
 
-        # Modifies the json to assign the value to the key as sepcified in the if statement.
-        check_key = check_key.replace(expr_value, "").replace(" ", "").replace("=", "")
-        expr_value = expr_value.replace('"', "").replace("'", "")
+          # Modifies the json to assign the value to the key as sepcified in the if statement.
+          check_key = check_key.replace(expr_value, "").replace(" ", "").replace("=", "")
+          expr_value = expr_value.replace('"', "").replace("'", "")
 
-        set_value(data, check_key, expr_value)
+          set_value(data, check_key, expr_value)
 
     # Each value is matched with the key/varible in the template and is replace with the value.
     if value != None:

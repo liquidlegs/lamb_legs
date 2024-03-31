@@ -1,7 +1,7 @@
 {
-    "change_name": "if victim_ip.startswith('29.11') then name ='Rams Bottom'",
+    "change_name": "if victim_ip.startswith('29.11') then title = 'Dr'; name ='Rams Bottom'",
     "change_sev": "if 'critical' in impact.lower() then severity = 'P1'",
-    "title": "Dr",
+    "title": "Mr",
     "name": "NO NAME",
     "datetime": "23rd of March, 2024 at 03:36 PM",
     "alert_name": "All Your Base Are Belong To Us!",
@@ -12,7 +12,7 @@
     "victim": "AWESOME/admin",
     "victim_ip": "29.11.v.b",
     "attacker_dom": "notransomware@AYBABTU.goodguys",
-    "impact": "Critical",
+    "impact": "CRITICAL",
     "severity": "NULL",
     "victim_host": "AWESOME.DC.secretlydeadlyorganization.com.io",
     "link": "https://siem-somethingawesome?query=allyourbasearebelongtous%20ransomware",
