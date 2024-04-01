@@ -30,7 +30,7 @@ def check_if_expr(pattern: str, statement: str) -> str | None:
     output = chk.group(0)
     return output
   else:
-    print("Error: invalid syntax. Must be assigning a value to a key.")
+    print(f"Error: invalid syntax - Must be assigning a value to a key. [{statement}]")
     return None
 
 
@@ -50,11 +50,11 @@ def issue_results(data, expr: str):
   expr_value = check_if_expr(GET_STRING, expr)
 
   # Modifies the json to assign the value to the key as sepcified in the if statement.
-  check_key = check_key.replace(expr_value, "").replace(" ", "").replace("=", "")
-  expr_value = expr_value.replace('"', "").replace("'", "")
+  if expr_value != None:
+    check_key = check_key.replace(expr_value, "").replace(" ", "").replace("=", "")
+    expr_value = expr_value.replace('"', "").replace("'", "")
 
-  set_value(data, check_key, expr_value)
-
+    set_value(data, check_key, expr_value)
 
 # Finds all variables/keys in the template file and creates a config file from it. 
 def search_template_variables(args, display_data=False):
@@ -141,6 +141,10 @@ def parse_input(args):
           if i == temp:
             var = temp
       
+      if var == None or var == "":
+        print(f"Error: unable to find variable in statement '{statement}'")
+        continue
+
       # Gets the value of the variable and encloses it with quotes.
       var_value = check_json_error(data, var)
       var_value = f"'{var_value}'"
@@ -156,15 +160,7 @@ def parse_input(args):
           for chunk in check_chunks:
             issue_results(data, chunk)
         else:
-          # Seperates the name of the key and the value to assign to the key
-          check_key = check_if_expr(GET_IF_RESULT, expr)
-          expr_value = check_if_expr(GET_STRING, expr)
-
-          # Modifies the json to assign the value to the key as sepcified in the if statement.
-          check_key = check_key.replace(expr_value, "").replace(" ", "").replace("=", "")
-          expr_value = expr_value.replace('"', "").replace("'", "")
-
-          set_value(data, check_key, expr_value)
+          issue_results(data, expr)
 
     # Each value is matched with the key/varible in the template and is replace with the value.
     if value != None:
