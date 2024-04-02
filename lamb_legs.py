@@ -1,7 +1,6 @@
 import argparse, json, re
+from platform import system
 
-GET_IF_RESULT = r"\S+\s*=\s*'[\S ]+'|\S+\s*=\s*\"[\S ]+\""
-GET_STRING = r"'[\S ]+'|\"[\S ]+\""
 GET_VARS = r"{\S+}"
 
 # Returns the value that is stored in the json key.
@@ -21,40 +20,6 @@ def read_file(file_name: str) -> str:
 
   return buffer
 
-# Used to check if the if statement matches the syntax.
-def check_if_expr(pattern: str, statement: str) -> str | None:
-  output = None
-  chk = re.search(pattern, statement)
-  
-  if chk != None:
-    output = chk.group(0)
-    return output
-  else:
-    print(f"Error: invalid syntax - Must be assigning a value to a key. [{statement}]")
-    return None
-
-
-# Sets the key of a python dictonary to a partiocular value.
-def set_value(data: str, key: str, value: str) -> bool:
-  try:
-    data[key] = value
-    return True
-  except Exception as e:
-    print(f"Error: {e}")
-    return False
-  
-
-def issue_results(data, expr: str):
-  # Seperates the name of the key and the value to assign to the key
-  check_key = check_if_expr(GET_IF_RESULT, expr)
-  expr_value = check_if_expr(GET_STRING, expr)
-
-  # Modifies the json to assign the value to the key as sepcified in the if statement.
-  if expr_value != None:
-    check_key = check_key.replace(expr_value, "").replace(" ", "").replace("=", "")
-    expr_value = expr_value.replace('"', "").replace("'", "")
-
-    set_value(data, check_key, expr_value)
 
 # Finds all variables/keys in the template file and creates a config file from it. 
 def search_template_variables(args, display_data=False):
@@ -94,6 +59,7 @@ def search_template_variables(args, display_data=False):
 def parse_input(args):
   config_path = args.config_file
   template_path = args.template
+  script_path = args.logic
   output = args.output
 
   # The config file as a string.
@@ -108,59 +74,15 @@ def parse_input(args):
 
   # The template file as a string.
   templ_buffer = read_file(template_path)
-   
-  for key in data:
+  logic_buffer = read_file(script_path)
 
+  if logic_buffer != None:
+    exec(logic_buffer, locals())
+
+  for key in data:
     # Code block reads through each key in the config file and extracts the value.
     match = "{" + key + "}"
     value = check_json_error(data, key)
-
-    if value[0:2] == "if":
-      # Removes the characters "if " from the statement string.
-      statement = value[3:]
-      expr = None
-
-      if "then" in statement:
-        # if 'then' is present, we extract the body of the if statement.
-        split_statement = statement.split("then ")
-
-        # Statement stores the if condition while expr stores the result if true.
-        statement = split_statement[0]
-        expr = split_statement[len(split_statement)-1]
-      
-      # Stores the name of the key.
-      var = ""
-      for i in data:
-        temp = ""
-        
-        # Checks if the key exists within the json.
-        if i in statement:
-          temp = i
-
-          # Checks for an exact match before assinging to var.
-          if i == temp:
-            var = temp
-      
-      if var == None or var == "":
-        print(f"Error: unable to find variable in statement '{statement}'")
-        continue
-
-      # Gets the value of the variable and encloses it with quotes.
-      var_value = check_json_error(data, var)
-      var_value = f"'{var_value}'"
-
-      # Replaces the name of the variable with the actual value and executes the code.
-      statement = statement.replace(var, var_value)
-      code_string = eval(statement)
-
-      if code_string == True:
-        check_chunks = expr.split(";") or expr.split("; ")
-        
-        if len(check_chunks) > 1:
-          for chunk in check_chunks:
-            issue_results(data, chunk)
-        else:
-          issue_results(data, expr)
 
     # Each value is matched with the key/varible in the template and is replace with the value.
     if value != None:
@@ -171,7 +93,7 @@ def parse_input(args):
     print(templ_buffer)
   else:
     size = len(templ_buffer)
-    
+
     with open(output, "w") as f:
       f.write(templ_buffer)
       print(f"Successfully wrote {size} bytes to {output}")
@@ -181,6 +103,7 @@ def main():
   parser = argparse.ArgumentParser(description="none")
   parser.add_argument("-c", "--config_file", action="store", help="The file path that holds the keys and key values")
   parser.add_argument("-t", "--template", action="store", help="The file path to the template to modify")
+  parser.add_argument("-l", "--logic", action="store")
   parser.add_argument("-p", "--parse_template", action="store")
   parser.add_argument("-o", "--output", action="store", help="The file path to the file you want to create")
   args = parser.parse_args()
