@@ -1,5 +1,6 @@
 import argparse, json, re
 from platform import system
+from pathlib import Path
 
 GET_VARS = r"{\S+}"
 
@@ -12,8 +13,16 @@ def check_json_error(data, key: str) -> str | None:
     return None
 
 # Reads a file and returns it a string.
-def read_file(file_name: str) -> str:
+def read_file(file_name: str) -> str | None:
   buffer = ""
+
+  if file_name == None:
+    return
+
+  path = Path(file_name)
+  if path.exists() == False:
+    print(f"Error: path not found - {file_name}")
+    return None
 
   with open(file_name, "r") as f:
     buffer = f.read()
