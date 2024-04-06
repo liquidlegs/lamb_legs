@@ -1,5 +1,4 @@
 import argparse, json, re
-from platform import system
 from pathlib import Path
 
 GET_VARS = r"{\S+}"
@@ -34,7 +33,7 @@ def read_file(file_name: str) -> str | None:
 def search_template_variables(args, display_data=False):
 
   # Reads the template file into a string and parses it for the variables.
-  templ_buffer = read_file(args.parse_template)
+  templ_buffer = read_file(args.template)
   find_vars = re.findall(GET_VARS, templ_buffer)
   json_keys = []
 
@@ -62,6 +61,29 @@ def search_template_variables(args, display_data=False):
     with open(args.output, "w") as f:
       f.write(json_data)
       print(f"Successfully wrote {len(json_data)} bytes to {args.output}")
+
+
+def empty_config(args):
+  file = read_file(args.config_file)
+  if file == None:
+    print(f"Error: failed to open file at path {file}")
+    return
+  
+  try:
+    data = json.loads(file)
+  except Exception as e:
+    print(f"Error: {e}")
+    return
+  
+  for key in data:
+    data[key] = ""
+
+  json_data = json.dumps(data, indent=2)
+  size = len(json_data)
+
+  with open(args.config_file, "w") as f:
+    f.write(json_data)
+    print(f"Successfully wrote empty file with {size} bytes to {args.config_file}")
 
 
 # Parses the keys and key values and replaces the content as specified by the user.
@@ -113,16 +135,26 @@ def main():
   parser.add_argument("-c", "--config_file", action="store", help="The file path that holds the keys and key values")
   parser.add_argument("-t", "--template", action="store", help="The file path to the template to modify")
   parser.add_argument("-l", "--logic", action="store")
-  parser.add_argument("-p", "--parse_template", action="store")
+  parser.add_argument("-p", "--parse_template", action="store_true")
+  parser.add_argument("-e", "--empty-config", action="store_true")
   parser.add_argument("-o", "--output", action="store", help="The file path to the file you want to create")
   args = parser.parse_args()
 
   if args.config_file != None and args.template != None:
     parse_input(args)
-  elif args.parse_template != None and args.output != None:
-    search_template_variables(args)
-  elif args.parse_template != None and args.output == None:
-    search_template_variables(args, display_data=True)
+  
+  elif args.config_file == None and args.template != None:
+    
+    if args.parse_template == True and args.output != None:
+      search_template_variables(args)
+    elif args.parse_template == True and args.output == None:
+      search_template_variables(args, display_data=True)
+  
+  elif args.config_file != None and args.template == None:
+    
+    if args.empty_config == True:
+      empty_config(args)
+
   else:
     print("Error: No config file or template file was specified.")
 
